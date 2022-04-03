@@ -1,10 +1,580 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Github web page</title>
-    </head>
-    <body>
-	<h1>Hello!</h1>
-	<h3>Welcome</h3>
-    </body>
-</html>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script>
+
+var fpArithmetic = function (op, x, y) {
+    var n = {
+            '*': x * y,
+            '-': x - y,
+            '+': x + y,
+            '/': x / y
+        }[op];
+
+    return Math.round(n * 100)/100;
+};
+
+function getScore(ticker){
+	var tCurr =	$("#"+ticker+"_curr");
+	var t1 = $("#"+ticker+"_1");
+	var t3 = $("#"+ticker+"_3");
+	var t6 = $("#"+ticker+"_6");
+	var t12 = $("#"+ticker+"_12");
+
+	var pCurr = tCurr.val();
+	var p1 = t1.val();
+	var p3 = t3.val();
+	var p6 = t6.val();
+	var p12 = t12.val();
+
+	if(pCurr === ""){
+		tCurr.focus();
+		alert(ticker+" 현재가를 입력하세요.");
+		return undefined;
+	}else if(p1 === ""){
+		t1.focus();
+		alert(ticker+" 1개월전 가격을 입력하세요.");
+		return undefined;
+	}else if(p3 === ""){
+		t3.focus();
+		alert(ticker+" 3개월전 가격을 입력하세요.");
+		return undefined;
+	}else if(p6 === ""){
+		t6.focus();
+		alert(ticker+" 6개월전 가격을 입력하세요.");
+		return undefined;
+	}else if(p12 === ""){
+		t12.focus();
+		alert(ticker+" 12개월전 가격을 입력하세요.");
+		return undefined;
+	}
+
+	var nCurr = Number(pCurr);
+	var n1 = Number(p1);
+	var n3 = Number(p3);
+	var n6 = Number(p6);
+	var n12 = Number(p12);
+//alert(0.1*7);
+//alert(fpArithmetic("*",fpArithmetic("/",nCurr-n6,n6),2));
+
+	return ( 
+		fpArithmetic("+",
+		fpArithmetic("+",fpArithmetic("*",fpArithmetic("/",nCurr-n1,n1),12),fpArithmetic("*",fpArithmetic("/",nCurr-n3,n3),4)),
+		fpArithmetic("+",fpArithmetic("*",fpArithmetic("/",nCurr-n6,n6),2),fpArithmetic("/",nCurr-n12,n12))
+	));
+}
+
+var setScore = function(ticker){
+	var score = getScore(ticker);
+	if(score===undefined)return undefined;
+	$("#"+ticker+"_result").html(score);
+	return score;
+}
+
+
+function setResult(){
+	var sSpy = setScore("spy");if(sSpy==undefined)return;
+	var sEfa = setScore("efa");if(sEfa==undefined)return;
+	var sEem = setScore("eem");if(sEem==undefined)return;
+	var sAgg = setScore("agg");if(sAgg===undefined)return;
+	
+	var sLqd = setScore("lqd");if(sLqd===undefined)return;
+	var sIef = setScore("ief");if(sIef===undefined)return;
+	var sShy = setScore("shy");if(sShy===undefined)return;
+
+	var su;
+	var result;
+	if(sSpy>0 && sEfa>0 && sEem>0 && sAgg>0){
+		su = sSpy; result="SPY"
+		if(su < sEfa){
+			su = sEfa;
+			result = "EFA";
+		}
+		if(su < sEem){
+			su = sEem;
+			result = "EEM";
+		}
+		if(su < sAgg){
+			su = sAgg;
+			result = "AGG";
+		}
+	}else{
+		su = sLqd; result="LQD"
+		if(su < sIef){
+			su = sIef;
+			result = "IEF";
+		}
+		if(su < sShy){
+			su = sShy;
+			result = "SHY";
+		}
+	}
+
+	$("#total").html(result+"에 몰빵");
+}
+
+var get12 = function(ticker){
+	var tCurr =	$("#"+ticker+"_curr_0");
+	var t12 = $("#"+ticker+"_12_0");
+	var pCurr = tCurr.val();
+	var p12 = t12.val();
+	if(pCurr === ""){
+		tCurr.focus();
+		alert(ticker+" 현재가를 입력하세요.");
+		return undefined;
+	}else if(p12 === ""){
+		t12.focus();
+		alert(ticker+" 12개월전가를 입력하세요.");
+		return undefined;
+	}
+
+	var nCurr = Number(pCurr);
+	var n12 = Number(p12);
+
+	return fpArithmetic("/",nCurr-n12,n12);
+}
+
+function setResult_0(){
+	var sSpy = get12("spy");if(sSpy==undefined)return;$("#spy_result_0").html(sSpy);
+	var sEfa = get12("efa");if(sEfa==undefined)return;$("#efa_result_0").html(sEfa);
+	var sBil = get12("bil");if(sBil==undefined)return;$("#bil_result_0").html(sBil);
+
+	if(sSpy > sBil){
+		if(sSpy > sEfa){
+			$("#total_0").html("SPY에 몰빵");
+		}else{
+			$("#total_0").html("EFA에 몰빵");
+		}
+	}else{
+		$("#total_0").html("AGG에 몰빵");
+	}
+
+}
+
+function setResult_1(){
+	var snp = $('input[name=radio_snp]');
+	var sil = $('input[name=radio_sil]');
+
+	var isSnp;
+	for( i=0; i<snp.length; i++ ) {
+		if(snp[i].checked) {
+			isSnp = snp[i].value;
+			break;
+		}
+	}
+	var isSil;
+	for( i=0; i<sil.length; i++ ) {
+		if(sil[i].checked) {
+			isSil = sil[i].value;
+			break;
+		}
+	}
+
+	if(isSnp === undefined){
+		alert("S&P500을 선택하세요.");
+		snp.focus();
+		return;
+	}else if(isSil === undefined){
+		alert("미국실업률을 선택하세요.");
+		sil.focus();
+		return;
+	}
+
+
+	if(isSnp === "1" && isSil === "0"){
+		$("#total_1").html("미국단기국채			SHY	25%");
+	}else{
+		$("#total_1").html("나스닥			QQQ	25%");
+	}
+}
+</script>
+
+<body  oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+
+
+포트폴리오 계산기<br>
+유료api를 연동하여 완전자동화할 예정<br>
+국내주식 https://joycecoder.tistory.com/107<br>
+<p>
+<table border="1">
+	<tr>
+		<td colspan="9" align="center">
+			VAA공격형
+		</td>
+	</tr>
+	<tr>
+		<td colspan="9">
+			매월 말 <br>
+			공격형자산 4개 모두의 모멘텀 스코어가 0이상일 경우 포폴 전체를 가장 모멘텀 스코어가 높은 공격형 자산에 투자<br>
+			그게 아닐 경우 포폴 전체를 가장 모멘텀 스코아가 높은 안전자산에 투자<br>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			
+		</td>
+		<td>
+			자산
+		</td>
+		<td>
+			티커
+		</td>
+		<td>
+			현재가
+		</td>
+		<td>
+			1개월전가
+		</td>
+		<td>
+			3개월전가
+		</td>
+		<td>
+			6개월전가
+		</td>
+		<td>
+			12개월전가
+		</td>
+		<td>
+			모멘텀스코어
+		</td>
+	</tr>
+	<tr>
+		<td rowspan="4">
+			공격자산
+		</td>
+		<td>
+			미국주식
+		</td>
+		<td>
+			SPY
+		</td>
+		<td>
+			<input id="spy_curr" type="number" value="3000">
+		</td>
+		<td>
+			<input id="spy_1" type="number" value="3300">
+		</td>
+		<td>
+			<input id="spy_3" type="number" value="3000">
+		</td>
+		<td>
+			<input id="spy_6" type="number" value="2727.27">
+		</td>
+		<td>
+			<input id="spy_12" type="number" value="2500">
+		</td>
+		<td id="spy_result">
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			미국외선진국주식
+		</td>
+		<td>
+			EFA
+		</td>
+		<td>
+			<input id="efa_curr" type="number">
+		</td>
+		<td>
+			<input id="efa_1" type="number">
+		</td>
+		<td>
+			<input id="efa_3" type="number">
+		</td>
+		<td>
+			<input id="efa_6" type="number">
+		</td>
+		<td>
+			<input id="efa_12" type="number">
+		</td>
+		<td id="efa_result">
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			신흥국주식
+		</td>
+		<td>
+			EEM
+		</td>
+		<td>
+			<input id="eem_curr" type="number">
+		</td>
+		<td>
+			<input id="eem_1" type="number">
+		</td>
+		<td>
+			<input id="eem_3" type="number">
+		</td>
+		<td>
+			<input id="eem_6" type="number">
+		</td>
+		<td>
+			<input id="eem_12" type="number">
+		</td>
+		<td id="eem_result">
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			미국채권
+		</td>
+		<td>
+			AGG
+		</td>
+		<td>
+			<input id="agg_curr" type="number">
+		</td>
+		<td>
+			<input id="agg_1" type="number">
+		</td>
+		<td>
+			<input id="agg_3" type="number">
+		</td>
+		<td>
+			<input id="agg_6" type="number">
+		</td>
+		<td>
+			<input id="agg_12" type="number">
+		</td>
+		<td id="agg_result">
+			
+		</td>
+	</tr>
+	<tr>
+		<td rowspan="3">
+			안전자산
+		</td>
+		<td>
+			미국회사채
+		</td>
+		<td>
+			LQD
+		</td>
+		<td>
+			<input id="lqd_curr" type="number">
+		</td>
+		<td>
+			<input id="lqd_1" type="number">
+		</td>
+		<td>
+			<input id="lqd_3" type="number">
+		</td>
+		<td>
+			<input id="lqd_6" type="number">
+		</td>
+		<td>
+			<input id="lqd_12" type="number">
+		</td>
+		<td id="lqd_result">
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			미국 중기국채
+		</td>
+		<td>
+			IEF
+		</td>
+		<td>
+			<input id="ief_curr" type="number">
+		</td>
+		<td>
+			<input id="ief_1" type="number">
+		</td>
+		<td>
+			<input id="ief_3" type="number">
+		</td>
+		<td>
+			<input id="ief_6" type="number">
+		</td>
+		<td>
+			<input id="ief_12" type="number">
+		</td>
+		<td id="ief_result">
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			미국단기국채
+		</td>
+		<td>
+			SHY
+		</td>
+		<td>
+			<input id="shy_curr" type="number">
+		</td>
+		<td>
+			<input id="shy_1" type="number">
+		</td>
+		<td>
+			<input id="shy_3" type="number">
+		</td>
+		<td>
+			<input id="shy_6" type="number">
+		</td>
+		<td>
+			<input id="shy_12" type="number">
+		</td>
+		<td id="shy_result">
+			
+		</td>
+		
+	</tr>
+	<tr>
+		<td colspan="9">
+			<button onClick="setResult()">계산</button>
+		</td>
+	</tr>
+	<tr>
+			<td colspan="9" id="total">
+
+			</td>
+		</tr>
+</table>
+<p>
+
+<table border="1">
+	<tr>
+		<td colspan="5" align="center">
+			오리지널 듀얼 모멘텀
+		</td>
+	</tr>
+	<tr>
+		<td colspan="5">
+매월말 spy efa 미국 초단기채권 BIL 의 최근 12개월 수익률 계산<br>
+spy > bil = spy efa 중 최근12개월 수익률이 더 높은 etf 투자<br>
+spy < bil = agg
+		</td>
+	</tr>
+	<tr>
+		<td>
+			자산
+		</td>
+		<td>
+			티커
+		</td>
+		<td>
+			현재가
+		</td>
+		<td>
+			12개월전가격
+		</td>
+		<td>
+			12개월수익률
+		</td>
+	</tr>
+	<tr>
+		<td>
+			미국주식
+		</td>
+		<td>
+			SPY
+		</td>
+		<td>
+			<input id="spy_curr_0" type="number">
+		</td>
+		<td>
+			<input id="spy_12_0" type="number">
+		</td>
+		<td id="spy_result_0">
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			미국외선진국주식
+		</td>
+		<td>
+			EFA
+		</td>
+		<td>
+			<input id="efa_curr_0" type="number">
+		</td>
+		<td>
+			<input id="efa_12_0" type="number">
+		</td>
+		<td id="efa_result_0">
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			미국 초단기채권
+		</td>
+		<td>
+			BIL
+		</td>
+		<td>
+			<input id="bil_curr_0" type="number">
+		</td>
+		<td>
+			<input id="bil_12_0" type="number">
+		</td>
+		<td id="bil_result_0">
+			
+		</td>
+	</tr>
+	<tr>
+		<td colspan="5">
+			<button onClick="setResult_0()">계산</button>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="5" id="total_0">
+
+		</td>
+	</tr>
+</table>
+<p>
+
+<table border="1">
+	<tr>
+		<td colspan="2" align="center">
+			LAA
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+미국대형가치주		IWD	25<br>
+금			GLD	25<br>
+미국 중기국채		IEF	25<br>
+	<br>
+미국단기국채			SHY	25  S&P500 < 200일 이동평균 && 미국실업률 > 12개월 이동평균<br>
+나스닥			QQQ	    아니라면<br>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<input type="radio" name="radio_snp" value="0">S&P500
+			<input type="radio" name="radio_snp" value="1">200일 이동평균선	
+		</td>
+		<td>
+			<input type="radio" name="radio_sil" value="0">미국실업률  
+			<input type="radio" name="radio_sil" value="1">12개월 이동평균선
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<button onClick="setResult_1()">계산</button>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			미국대형가치주		IWD	25%<br>
+			금				GLD	25%<br>
+			미국 중기국채		IEF	25%
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2" id="total_1">
+			
+		</td>
+	</tr>
+</table>
+
+</body>
