@@ -1,103 +1,83 @@
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
 <script>
+$.getJSON(
+	//"http://146.56.178.0:5000/price", 
+	"http://127.0.0.1:5000/price",
+	{ 
+	}, 
+	function(data) { 
+		$("#today").html(data["DAYS"]["today"]);
+		$("#month1").html(data["DAYS"]["month1"]);
+		$("#month3").html(data["DAYS"]["month3"]);
+		$("#month6").html(data["DAYS"]["month6"]);
+		$("#month12").html(data["DAYS"]["month12"]);
 
-var fpArithmetic = function (op, x, y) {
-    var n = {
-            '*': x * y,
-            '-': x - y,
-            '+': x + y,
-            '/': x / y
-        }[op];
-
-    return Math.round(n * 100)/100;
-};
-
-
-
-function setResult_1(){
-	var snp = $('input[name=radio_snp]');
-	var sil = $('input[name=radio_sil]');
-
-	var isSnp;
-	for( i=0; i<snp.length; i++ ) {
-		if(snp[i].checked) {
-			isSnp = snp[i].value;
-			break;
-		}
+		delete data["DAYS"];
+		Object.keys(data).forEach(function(k){
+			$("#table0").append("<tr><td>"+data[k]["info"]+"</td><td>"+k+"</td><td>"+data[k]["mScore"].toFixed(2)+"</td><td>"+data[k]["price"].toFixed(2)+"</td><td>"+data[k]["price1"].toFixed(2)+"</td><td>"+data[k]["price3"].toFixed(2)+"</td><td>"+data[k]["price6"].toFixed(2)+"</td><td>"+data[k]["price12"].toFixed(2)+"</td></tr>");
+		});
 	}
-	var isSil;
-	for( i=0; i<sil.length; i++ ) {
-		if(sil[i].checked) {
-			isSil = sil[i].value;
-			break;
-		}
-	}
+);
 
-	if(isSnp === undefined){
-		alert("S&P500을 선택하세요.");
-		snp.focus();
-		return;
-	}else if(isSil === undefined){
-		alert("미국실업률을 선택하세요.");
-		sil.focus();
-		return;
+$.getJSON(
+	"http://127.0.0.1:5000/quant",
+	{ 
+	}, 
+	function(data) { 
+		for(idx in data){
+			$("#table1").append("<tr><td>"+data[idx]["strategy"]+"</td><td>"+data[idx]["yield"]+"</td><td>"+data[idx]["rebal"]+"</td><td>"+data[idx]["result"]+"</td><td>"+data[idx]["info"]+"</td></tr>");
+		};
 	}
+);
 
-
-	if(isSnp === "1" && isSil === "0"){
-		$("#total_1").html("미국단기국채			SHY	25%");
-	}else{
-		$("#total_1").html("나스닥			QQQ	25%");
+$.getJSON(
+	"http://127.0.0.1:5000/indicators",
+	{ 
+	}, 
+	function(data) { 
+		Object.keys(data).forEach(function(k){
+			$("#table2").append("<tr><td>"+data[k]["title"]+"</td><td>"+data[k]["index"]+"</td><td>"+data[k]["info"]+"</td></tr>");
+		});
 	}
-}
+);
+
 </script>
 
-<body  oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
 
-
-<table border="1">
+<table id="table0" border="1">
 	<tr>
-		<td colspan="2" align="center">
-			LAA
-		</td>
-	</tr>
-	<tr>
-		<td colspan="2">
-미국대형가치주		IWD	25<br>
-금			GLD	25<br>
-미국 중기국채		IEF	25<br>
-	<br>
-미국단기국채			SHY	25  S&P500 < 200일 이동평균 && 미국실업률 > 12개월 이동평균<br>
-나스닥			QQQ	    아니라면<br>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<input type="radio" name="radio_snp" value="0">S&P500
-			<input type="radio" name="radio_snp" value="1">200일 이동평균선	
-		</td>
-		<td>
-			<input type="radio" name="radio_sil" value="0">미국실업률  
-			<input type="radio" name="radio_sil" value="1">12개월 이동평균선
-		</td>
-	</tr>
-	<tr>
-		<td colspan="2">
-			<button onClick="setResult_1()">계산</button>
-		</td>
-	</tr>
-	<tr>
-		<td colspan="2">
-			미국대형가치주		IWD	25%<br>
-			금				GLD	25%<br>
-			미국 중기국채		IEF	25%
-		</td>
-	</tr>
-	<tr>
-		<td colspan="2" id="total_1">
-			
-		</td>
+		<td>자산</td>
+		<td>티커</td>
+		<td>모멘텀스코어</td>
+		<td id="today"></td>
+		<td id="month1"></td>
+		<td id="month3"></td>
+		<td id="month6"></td>
+		<td id="month12"></td>
 	</tr>
 </table>
 
-</body>
+<table id="table1" border="1">
+	<tr>
+		<td>투자전략</td>
+		<td>연예상수익률</td>
+		<td>리밸런싱</td>
+		<td>결과</td>
+		<td>정보</td>
+	</tr>
+
+</table>
+
+<table id="table2" border="1">
+	<tr>
+		<td>지수</td>
+		<td>값</td>
+		<td>정보</td>
+	</tr>
+	<tr>
+		<td id="title"></td>
+		<td id="title"></td>
+		<td id="title"></td>
+	</tr>
+</table>
