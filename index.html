@@ -1,83 +1,190 @@
-<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+#pip3 install flask
+#pip3 install flask_cors
+#pip3 install yfinance
+#pip3 install beautifulsoup4
 
-<script>
-$.getJSON(
-	//"http://146.56.178.0:5000/price", 
-	"http://127.0.0.1:5000/price",
-	{ 
-	}, 
-	function(data) { 
-		$("#today").html(data["DAYS"]["today"]);
-		$("#month1").html(data["DAYS"]["month1"]);
-		$("#month3").html(data["DAYS"]["month3"]);
-		$("#month6").html(data["DAYS"]["month6"]);
-		$("#month12").html(data["DAYS"]["month12"]);
+#sudo pip3 install flask
+#sudo pip3 install yfinance
+#sudo pip3 install beautifulsoup4
+#sudo pip3 install Flask-APScheduler
 
-		delete data["DAYS"];
-		Object.keys(data).forEach(function(k){
-			$("#table0").append("<tr><td>"+data[k]["info"]+"</td><td>"+k+"</td><td>"+data[k]["mScore"].toFixed(2)+"</td><td>"+data[k]["price"].toFixed(2)+"</td><td>"+data[k]["price1"].toFixed(2)+"</td><td>"+data[k]["price3"].toFixed(2)+"</td><td>"+data[k]["price6"].toFixed(2)+"</td><td>"+data[k]["price12"].toFixed(2)+"</td></tr>");
-		});
-	}
-);
+from flask import Flask 
+import Stock
+import Quant
+from datetime import datetime, timedelta
+import json
+from flask_cors import CORS
+import platform
+from apscheduler.schedulers.background import BackgroundScheduler
 
-$.getJSON(
-	"http://127.0.0.1:5000/quant",
-	{ 
-	}, 
-	function(data) { 
-		for(idx in data){
-			$("#table1").append("<tr><td>"+data[idx]["strategy"]+"</td><td>"+data[idx]["yield"]+"</td><td>"+data[idx]["rebal"]+"</td><td>"+data[idx]["result"]+"</td><td>"+data[idx]["info"]+"</td></tr>");
-		};
-	}
-);
+print(platform.system())
+print(datetime.utcnow().strftime("%Y-%m-%d"));
 
-$.getJSON(
-	"http://127.0.0.1:5000/indicators",
-	{ 
-	}, 
-	function(data) { 
-		Object.keys(data).forEach(function(k){
-			$("#table2").append("<tr><td>"+data[k]["title"]+"</td><td>"+data[k]["index"]+"</td><td>"+data[k]["info"]+"</td></tr>");
-		});
-	}
-);
+app = Flask(__name__)
+#CORS(app)
+CORS(app, resources={r'*': {'origins': 'https://leesangun.github.io'}})
 
-</script>
+@app.route('/') 
+def reqHome(): 
+	return "퀀트"
+
+yf = Stock.YF()
+quantC = Quant.QuantC()
+
+#timeReload = ""
+def reload(): 
+    #global timeReload
+
+    #today0 = datetime.utcnow().strftime("%Y-%m-%d")
+    #if timeReload == today0:
+    #    return
+
+    #timeReload = today0
+
+    month1 = yf.nextDay(datetime.utcnow() + timedelta(days=-30))
+    month3 = yf.nextDay(datetime.utcnow() + timedelta(days=-90))
+    month6 = yf.nextDay(datetime.utcnow() + timedelta(days=-180))
+    month12 = yf.nextDay(datetime.utcnow() + timedelta(days=-365))
+
+    arrT = ["SPY","QQQ","IWM","VGK","EWJ",
+            "VNQ","GLD","DBC","HYG","TLT",
+            "EFA","EEM","AGG","LQD","IEF",
+            "SHY","BIL","REM","VWO","BND"]
+    sAssetInfo = [
+                "S&P500", "나스닥100",  "미국중소형", "유럽주식", "일본주식",
+                "미국부동산", "금", "원자재", "하이일드채권","미국장기채",
+                "미국외선진국","신흥국주식","미국채권","미국회사채","미국중기국채",
+                "미국단기국채", "미국초단기채","모기지리츠","개발도상국","미국혼합채권"]; 
+    price = yf.priceCurr(arrT)
+    price1 = yf.priceClose(arrT,month1)
+    price3 = yf.priceClose(arrT,month3)
+    price6 = yf.priceClose(arrT,month6)
+    price12 = yf.priceClose(arrT,month12)
+
+    quantC.setPrice(price,price1,price3,price6,price12)
+    momentumScore = quantC.getMomentumScore()
+
+    l = len(price)-1
+    l1 = len(price1)-1
+    l3 = len(price3)-1
+    l6 = len(price6)-1
+    l12 = len(price12)-1
+
+    global jsonPrice
+    jsonPrice = {
+        "DAYS":{
+            "today":price[arrT[0]].keys()[l].strftime("%Y-%m-%d"),
+            "month1":price1[arrT[0]].keys()[l1].strftime("%Y-%m-%d"),
+            "month3":price3[arrT[0]].keys()[l3].strftime("%Y-%m-%d"),
+            "month6":price6[arrT[0]].keys()[l6].strftime("%Y-%m-%d"),
+            "month12":price12[arrT[0]].keys()[l12].strftime("%Y-%m-%d")
+        }
+    }
+    i = 0
+    for t in arrT:
+        jsonPrice[t] = {"info":sAssetInfo[i],"mScore":momentumScore[t],"price":price[t][l],"price1":price1[t][l1],"price3":price3[t][l3],"price6":price6[t][l6],"price12":price12[t][l12]}
+        i+=1
+
+    
+    global jsonQuant
+    jsonQuant = [
+        quantC.resultQuantDualMom(),
+        quantC.resultQuantDualMomC(),
+        quantC.resultVaa(),
+        quantC.resultVaaB(),
+        quantC.resultDAA(),
+             {
+				"strategy":"유대인 전략",
+				"result":"SPY TLT VNG에 3등분",
+				"info":"계산 없음",
+				"yield":"10%",
+                "rebal":"연1회"
+			},
+             {
+				"strategy":"6대4",
+				"result":"SPY 60% IEF에 40%",
+				"info":"계산 없음",
+				"yield":"8%",
+                "rebal":"연1회"
+			},
+             {
+				"strategy":"영구",
+				"result":"SPY TLT GLD BIL에 4등분",
+				"info":"계산 없음",
+                "yield":"8%",
+				"rebal":"연1회"
+			},
+             {
+				"strategy":"사계절",
+				"result":"SPY 30%, IEF 15%, TLT 40%, GLD/DBC에 각 7.5%",
+				"info":"계산 없음",
+                "yield":"8~10%",
+				"rebal":"연1회"
+			},
+             {
+				"strategy":"올웨더",
+				"result":"SPY 12%, EFA 12%, EEM 12%, DBC 7%, GLD 7%, EDV 18%, LTPZ 18%, LQD 7%, EMLC 7%",
+				"info":"계산 없음",
+                "yield":"8~10%",
+				"rebal":"연1회"
+			}
+        ]
+
+timeReload0 = ""
+def reload0():
+    global timeReload0
+    today0 = datetime.utcnow().strftime("%Y-%m-%d %H %M")
+    if timeReload0 == today0:
+        return
+    timeReload0 = today0
+
+    fAg = yf.getFearAndGreed();
+    global jsonIndicators
+    jsonIndicators = {
+        #"FAG":{
+        #    "title":"feer and greed",
+        #    "index":fAg,
+        #    "info":"80이상이면 매도 20이하이면 매수"
+        #},
+        "VIX":{
+            "title":"VIX지수",
+            "index":yf.getVIX(),
+            "info":"12이하 매도  40 넘어가고 한달 후 매수"
+        },
+        "DIndex":{
+            "title":"달러인덱스",
+            "index":yf.getDollarIndex(),
+            "info":"세계 주요 6개국 통화에 대비 미국 달러의 평균적인 가치"
+        },
+        "WTI":{
+            "title":"WTI유 선물",
+            "index":yf.getWTI(),
+            "info":""
+        }
+    }
 
 
-<table id="table0" border="1">
-	<tr>
-		<td>자산</td>
-		<td>티커</td>
-		<td>모멘텀스코어</td>
-		<td id="today"></td>
-		<td id="month1"></td>
-		<td id="month3"></td>
-		<td id="month6"></td>
-		<td id="month12"></td>
-	</tr>
-</table>
+reload()
+reload0()
+sched = BackgroundScheduler(daemon=True) 
+sched.add_job(reload,'cron', day_of_week='1-5', hour='0',minute='0') 
+sched.start()
 
-<table id="table1" border="1">
-	<tr>
-		<td>투자전략</td>
-		<td>연예상수익률</td>
-		<td>리밸런싱</td>
-		<td>결과</td>
-		<td>정보</td>
-	</tr>
 
-</table>
+@app.route('/price') 
+def reqDual():
+    return json.dumps(jsonPrice)
 
-<table id="table2" border="1">
-	<tr>
-		<td>지수</td>
-		<td>값</td>
-		<td>정보</td>
-	</tr>
-	<tr>
-		<td id="title"></td>
-		<td id="title"></td>
-		<td id="title"></td>
-	</tr>
-</table>
+@app.route('/indicators') 
+def reqIndicators():
+    reload0()
+    return json.dumps(jsonIndicators)
+
+@app.route('/quant') 
+def reqQuant():
+    return json.dumps(jsonQuant)
+
+if __name__ == '__main__': 
+	#app.run()
+	#app.run('0.0.0.0',port=5000,debug=True)
+    app.run('0.0.0.0',port=5000,use_reloader=False)
