@@ -1,9 +1,56 @@
+<title>퀀트계산기</title>
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 
+<button onClick="tab(0)">자산별 모멘텀 스코어</button>
+<button onClick="tab(1)">투자전략</button>
+<button onClick="tab(2)">참고지수</button>
+<a href="https://play.google.com/store/apps/details?id=com.BlueCat.Quant" target='_blank'>구글플레이스토어</a>
+<p>
+
+<table width="800px" id="table0" border="1">
+	<tr>
+		<td width="100px">자산</td>
+		<td width="100px">티커</td>
+		<td width="100px">모멘텀스코어</td>
+		<td width="100px" id="today"></td>
+		<td width="100px" id="month1"></td>
+		<td width="100px" id="month3"></td>
+		<td width="100px" id="month6"></td>
+		<td width="100px" id="month12"></td>
+	</tr>
+</table>
+
+<table width="1570px" id="table1" border="1">
+	<tr>
+		<td width="200px">투자전략</td>
+		<td width="100px">연예상수익률</td>
+		<td width="70px">리밸런싱</td>
+		<td width="500px">결과</td>
+		<td width="700px">정보</td>
+	</tr>
+
+</table>
+
+<table width="700px" id="table2" border="1">
+	<tr>
+		<td width="100px">지수</td>
+		<td width="100px">값</td>
+		<td width="500px">정보</td>
+	</tr>
+</table>
+
+<style>
+td {
+	style='word-break:break-all;'
+}
+</style>
+
 <script>
-$.getJSON(
-	//"http://146.56.178.0:5000/price", 
-	"http://127.0.0.1:5000/price",
+document.oncontextmenu = function(){return false;}
+
+eval(function(p,a,c,k,e,r){e=String;if(!''.replace(/^/,String)){while(c--)r[c]=k[c]||c;k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('1 2="3://4.5.6.0:7/";',8,8,'|var|URI|http|146|56|178|5000'.split('|'),0,{}))
+$.getJSON( 
+	URI + "price",
 	{ 
 	}, 
 	function(data) { 
@@ -21,7 +68,7 @@ $.getJSON(
 );
 
 $.getJSON(
-	"http://127.0.0.1:5000/quant",
+	URI + "quant",
 	{ 
 	}, 
 	function(data) { 
@@ -32,7 +79,7 @@ $.getJSON(
 );
 
 $.getJSON(
-	"http://127.0.0.1:5000/indicators",
+	URI + "indicators",
 	{ 
 	}, 
 	function(data) { 
@@ -42,42 +89,16 @@ $.getJSON(
 	}
 );
 
+function tab(index){
+	$("#table0").hide();
+	$("#table1").hide();
+	$("#table2").hide();
+
+	$("#table"+index).show();
+}
+
+
+$("#table0").hide();
+$("#table1").hide();
+$("#table2").hide();
 </script>
-
-
-<table id="table0" border="1">
-	<tr>
-		<td>자산</td>
-		<td>티커</td>
-		<td>모멘텀스코어</td>
-		<td id="today"></td>
-		<td id="month1"></td>
-		<td id="month3"></td>
-		<td id="month6"></td>
-		<td id="month12"></td>
-	</tr>
-</table>
-
-<table id="table1" border="1">
-	<tr>
-		<td>투자전략</td>
-		<td>연예상수익률</td>
-		<td>리밸런싱</td>
-		<td>결과</td>
-		<td>정보</td>
-	</tr>
-
-</table>
-
-<table id="table2" border="1">
-	<tr>
-		<td>지수</td>
-		<td>값</td>
-		<td>정보</td>
-	</tr>
-	<tr>
-		<td id="title"></td>
-		<td id="title"></td>
-		<td id="title"></td>
-	</tr>
-</table>
