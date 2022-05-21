@@ -1,5 +1,15 @@
+
 <title>퀀트계산기</title>
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<style>
+  table {
+    border: 1px solid #444444;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #444444;
+  }
+</style>
 
 <button onClick="tab(0)">자산별 모멘텀 스코어</button>
 <button onClick="tab(1)">투자전략</button>
@@ -7,11 +17,11 @@
 <a href="https://play.google.com/store/apps/details?id=com.BlueCat.Quant" target='_blank'>구글플레이스토어</a>
 <p>
 
-<table width="800px" id="table0" border="1">
+<table width="800px" id="table0" style="text-align: center;">
 	<tr>
-		<td width="100px">자산</td>
+		<td width="120px">자산</td>
 		<td width="100px">티커</td>
-		<td width="100px">모멘텀스코어</td>
+		<td width="120px">모멘텀스코어</td>
 		<td width="100px" id="today"></td>
 		<td width="100px" id="month1"></td>
 		<td width="100px" id="month3"></td>
@@ -20,7 +30,7 @@
 	</tr>
 </table>
 
-<table width="1570px" id="table1" border="1">
+<table width="1570px" id="table1">
 	<tr>
 		<td width="200px">투자전략</td>
 		<td width="100px">연예상수익률</td>
@@ -31,7 +41,7 @@
 
 </table>
 
-<table width="700px" id="table2" border="1">
+<table width="700px" id="table2">
 	<tr>
 		<td width="100px">지수</td>
 		<td width="100px">값</td>
@@ -49,6 +59,8 @@ td {
 document.oncontextmenu = function(){return false;}
 
 eval(function(p,a,c,k,e,r){e=function(c){return c.toString(a)};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('0 1="2://3.4.5/6/7/8.9?a=";',11,11,'var|URI|https|lsu3|cafe24|com|master_server|quant|gate|php|key'.split('|'),0,{}))
+
+var mScore;
 $.getJSON( 
 	URI + "price",
 	{ 
@@ -62,7 +74,10 @@ $.getJSON(
 
 		delete data["DAYS"];
 		Object.keys(data).forEach(function(k){
-			$("#table0").append("<tr><td>"+data[k]["info"]+"</td><td>"+k+"</td><td>"+data[k]["mScore"].toFixed(2)+"</td><td>"+data[k]["price"].toFixed(2)+"</td><td>"+data[k]["price1"].toFixed(2)+"</td><td>"+data[k]["price3"].toFixed(2)+"</td><td>"+data[k]["price6"].toFixed(2)+"</td><td>"+data[k]["price12"].toFixed(2)+"</td></tr>");
+			mScore = data[k]["mScore"].toFixed(2);
+			if(mScore > 0) mScore = "<font color=red>"+mScore+"</font>";
+
+			$("#table0").append("<tr><td>"+data[k]["info"]+"</td><td>"+k+"</td><td>"+mScore+"</td><td>"+data[k]["price"].toFixed(2)+"</td><td>"+data[k]["price1"].toFixed(2)+"</td><td>"+data[k]["price3"].toFixed(2)+"</td><td>"+data[k]["price6"].toFixed(2)+"</td><td>"+data[k]["price12"].toFixed(2)+"</td></tr>");
 		});
 	}
 );
