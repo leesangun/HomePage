@@ -1,119 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
 
-<title>퀀트계산기</title>
-<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-<style>
-  table {
-    border: 1px solid #444444;
-    border-collapse: collapse;
-  }
-  th, td {
-    border: 1px solid #444444;
-  }
-</style>
+  <title>Cocos Creator | Admin</title>
 
-<button onClick="tab(0)">자산별 모멘텀 스코어</button>
-<button onClick="tab(1)">투자전략</button>
-<button onClick="tab(2)">참고지수</button>
-<a href="https://play.google.com/store/apps/details?id=com.BlueCat.Quant" target='_blank'>구글플레이스토어</a>
-<p>
+  <!--http://www.html5rocks.com/en/mobile/mobifying/-->
+  <meta name="viewport"
+        content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1,minimal-ui=true"/>
 
-<table width="800px" id="table0" style="text-align: center;">
-	<tr>
-		<td width="120px">자산</td>
-		<td width="100px">티커</td>
-		<td width="120px">모멘텀스코어</td>
-		<td width="100px" id="today"></td>
-		<td width="100px" id="month1"></td>
-		<td width="100px" id="month3"></td>
-		<td width="100px" id="month6"></td>
-		<td width="100px" id="month12"></td>
-	</tr>
-</table>
+  <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
 
-<table width="1570px" id="table1">
-	<tr>
-		<td width="200px">투자전략</td>
-		<td width="100px">연예상수익률</td>
-		<td width="70px">리밸런싱</td>
-		<td width="500px">결과</td>
-		<td width="700px">정보</td>
-	</tr>
+  <!-- force webkit on 360 -->
+  <meta name="renderer" content="webkit"/>
+  <meta name="force-rendering" content="webkit"/>
+  <!-- force edge on IE -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="msapplication-tap-highlight" content="no">
 
-</table>
+  <!-- force full screen on some browser -->
+  <meta name="full-screen" content="yes"/>
+  <meta name="x5-fullscreen" content="true"/>
+  <meta name="360-fullscreen" content="true"/>
 
-<table width="700px" id="table2">
-	<tr>
-		<td width="100px">지수</td>
-		<td width="100px">값</td>
-		<td width="500px">정보</td>
-	</tr>
-</table>
+  <!--fix fireball/issues/3568 -->
+  <!--<meta name="browsermode" content="application">-->
+  <meta name="x5-page-mode" content="app">
 
-<style>
-td {
-	style='word-break:break-all;'
-}
-</style>
+  <!--<link rel="apple-touch-icon" href=".png" />-->
+  <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
+
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+
+</head>
+<body>
+  <div id="GameDiv" cc_exact_fit_screen="true">
+      <div id="Cocos3dGameContainer">
+        <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="99"></canvas>
+      </div>
+    </div>
+  
+<!-- Polyfills bundle. -->
+<script src="src/polyfills.bundle.js" charset="utf-8"> </script>
+
+<!-- SystemJS support. -->
+<script src="src/system.bundle.js" charset="utf-8"> </script>
+
+<!-- Import map -->
+<script src="src/import-map.json" type="systemjs-importmap" charset="utf-8"> </script>
 
 <script>
-document.oncontextmenu = function(){return false;}
-
-eval(function(p,a,c,k,e,r){e=function(c){return c.toString(a)};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('0 1="2://3.4.5/6/7/8.9?a=";',11,11,'var|URI|https|lsu3|cafe24|com|master_server|quant|gate|php|key'.split('|'),0,{}))
-
-var mScore;
-$.getJSON( 
-	URI + "price",
-	{ 
-	}, 
-	function(data) { 
-		$("#today").html(data["DAYS"]["today"]);
-		$("#month1").html(data["DAYS"]["month1"]);
-		$("#month3").html(data["DAYS"]["month3"]);
-		$("#month6").html(data["DAYS"]["month6"]);
-		$("#month12").html(data["DAYS"]["month12"]);
-
-		delete data["DAYS"];
-		Object.keys(data).forEach(function(k){
-			mScore = data[k]["mScore"].toFixed(2);
-			if(mScore > 0) mScore = "<font color=red>"+mScore+"</font>";
-
-			$("#table0").append("<tr><td>"+data[k]["info"]+"</td><td>"+k+"</td><td>"+mScore+"</td><td>"+data[k]["price"].toFixed(2)+"</td><td>"+data[k]["price1"].toFixed(2)+"</td><td>"+data[k]["price3"].toFixed(2)+"</td><td>"+data[k]["price6"].toFixed(2)+"</td><td>"+data[k]["price12"].toFixed(2)+"</td></tr>");
-		});
-	}
-);
-
-$.getJSON(
-	URI + "quant",
-	{ 
-	}, 
-	function(data) { 
-		for(idx in data){
-			$("#table1").append("<tr><td>"+data[idx]["strategy"]+"</td><td>"+data[idx]["yield"]+"</td><td>"+data[idx]["rebal"]+"</td><td>"+data[idx]["result"]+"</td><td>"+data[idx]["info"]+"</td></tr>");
-		};
-	}
-);
-
-$.getJSON(
-	URI + "indicators",
-	{ 
-	}, 
-	function(data) { 
-		Object.keys(data).forEach(function(k){
-			$("#table2").append("<tr><td>"+data[k]["title"]+"</td><td>"+data[k]["index"]+"</td><td>"+data[k]["info"]+"</td></tr>");
-		});
-	}
-);
-
-function tab(index){
-	$("#table0").hide();
-	$("#table1").hide();
-	$("#table2").hide();
-
-	$("#table"+index).show();
-}
-
-
-$("#table0").hide();
-$("#table1").hide();
-$("#table2").hide();
+    System.import('./index.js').catch(function(err) { console.error(err); })
 </script>
+
+</body>
+</html>
